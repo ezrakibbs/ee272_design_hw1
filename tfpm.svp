@@ -1,0 +1,130 @@
+// A simple test bench for the fpm 12 bit floating point multiplier
+`timescale 1ns/10ps
+
+module top();
+    typedef struct packed {
+        reg Sign;
+        reg [4:0] Exp;
+        reg [5:0] Fract;
+    } FP;
+    typedef struct packed {
+        FP A,B;
+        FP Z;
+    } FPS;
+    reg clk,reset;
+    reg pushin,pushout;
+    FP A,B;
+    FP Z;
+    FPS eres[$];
+
+`protected
+(C\NX]a9Q;&C?Lf\+6We8S=Hg^TUQTd<2O]dD+D0()7GQJ[V\TeD))YUPNfCPLPX
+U-UK18#,@0,1;9aEY.M)7S2JgG<dJ>>C4\TK=c<0(V3@GE>4,B5UNZLZ8&Y4=_Z[
+ebF@ZJgdLHg):4S/TOY7Z.70NX;ZH<M+a>0M&_9CE;0;B/_ZH,FO0?d=A>I>N\75
+UK/#bfBE,<?>M9O,S&T1RUZ=4V3<Pa/^=+/9b,T?B.-1B7N@Z0?V;,\e(].?fgK8
+&a^5_R;AH4-NZNJB(Z-@6P;Z;ccc74[K6#?C5-2(aCE#U#KKNAgebC51?4V51_]d
+>BfW?M(-PeRP8F^CDBdKbQP2N1Y0&N;VACIadM#JKRb[+SA4^8Na7#AHfK-9@KeG
+IWROBWQEDET2<Ba[SS]/L)(MSG:.+H<H.KQ5R2#5)(FZgB8<,9.N_Y\]W=dZbF<3
+eZA7NSaX6TC),[<C8;b,?N-M69BCP?&=-,87J:EHf\Qbf/Z--N)(CG(SO4^/]CP>
+/)/DV<-FUBXOVU:OY(+]H7;,N&O@bL\S0F23bT@U7,DN;,(M6RMeJO9gcH5dbeJa
+UVe/^OVON8G3E<:GTF1^2\/aH2K3HE603[caN(__ZK58VH)7Se4KPU1JcFC3;P+f
+-G8Occ+DPbM#b^?)K]ENERJEc_\)-BZ43:4BgIc(=;-f]]UZ0/c\(-eZ(_]bLIg;
+-CV(Oe-NO[I@?29.C9DY=OG7.C+-ad\1VLFAR,8Vd5PXaT=Y>7ge@,&K_B>;E@HS
+5\-QPd\)3D9163W[FASdW45+#f=DYH13CF-[,Lc<Y[E@#Tf8O(?&ETUXf^X,7G-e
+H&AT&L:J(f37KEG/JN]@)+OBb)RPbbZ0G]F)MK-,.44TgcOC=6.A8#IIR?/R5-M]
+Pab/MHM@U>gV]/dC>4(K=Jbac\=/He@4./PC9AJNLd]9-Y19dFKW;7DMgfXCZ^[)
+VW;#0KVYQ,f9T;YFaM-;#g4B&^S.HgROST;6AE2LdJ\:&\Q#K6:GHX&U7&VfAb,5
+e_]Dbb,_=4a.gWJAI(<W<_Z3+S\<3M_eE)4O=^O^dM>fBeDO<)2+g/(,HJ?eC\C3
+)V(O4JZ/C5>.#,YdLF0?CJ/SU3.]4bfVYQPUDIa/FeJ>5)PQ&W.Dad3<L>-(^Bb9
+I:O;KSAJ>3=^ANPeLdRe70/4PH/Me-fA654+W.ST++9MH6P7=/c0R=#P9A\15LR/
+WeEGV-:9cN>2KX/)\YEMEg^4;R1Z#@f>K7)+a?;.8D@B=W4e1M>ZY;b\&M5((Jb&
+Y8>O>8(I9ADH#\UaN_G/>SP5H0:)XLCR&G)1NRgbSQfKA9b_\[>[=ZYN?b8JI\#C
+g=J/8W@V@#g)a((S0]HDeX@:JGH^-K33:O#g^RPadfH#XH.4YQHC3.8gNH/,&b)H
+WCF<7f(IFa^\CKY2L3RQ[]O>f:5W?[7KFZKRV@RR2M,+?>eVWQ<1DB.HVXG\c2D_
+9?YQS<CJKFMM--/PT2d:cdZY48ODdWg#a;@322b@J(5K9(]\7U:e=CE8/.RP?e9C
+(<AJB@>,LgQAR5dD@[;I6?>Y?#d4RHV:-3??_9R-E/2/JUbW<&_(:6a,JeUTI&LI
+B#KbMEKWH.FE77G8Z?4=CgQ]b+<C>H@AbdZ82Cc]b;S(Oe<AT@JFV9M1)^7FX?e3
+,>NYSQUBE?WC>[5_B/G2gB;M.[egMO((5TJb4IH_MD4JJB;V(f[V[-UDD?U.M-81
+Na-NW9dLN;N4C=U7dC]/7X8EM)J58/Ze.4?Ug&g7f-YBO\PIcQ[;VOc0_CJ_[H;J
+>FGfePf?<;JN5b7ZN=4:R&WCSTTK#PY5#KPB@L.gZ],eS:#<fAE9WC)8_@aD/MRM
+-?BQ9fF&BCPV:,ZOM+b9Q+KKS7.C]OK6^M,dZcYI<\3T]X&9fZgX]FTGeE6(N+#d
+8&VH2\_Re,b:4&/Y@eYAKfVe=LCDJHf<aF&]=?OP/SR;NGP+D6MP(_(74e[^0\eS
+L&d1bB>QM(108b,CXb6TYU-ALf9P_ccDYXdN=#-5g3c3beC>9B4GXT[B@baVI(S2
+4Cgc,857V]8Y=Q7a@+:QV890]A5EUM7U96B<=-)f@g#TH@;&aV5d0T[.TRObZ^>&
+>0.(WX#4XD6>#CU1C+\\T\@U=fDO^N3A[b1EQJ9<gG2d([B&X7ZSXJF^WWfQ9FP^
+^9/A0G4VEDJ7VDf<&/.J]F+M=/Eb]fB+DWW_cW-FI/?bPWA3AM[:/(=[26[T[bCW
+A=4&ROBK\^I2.8OGPRe@+J[(=[8Z)W8aULO[?&)]b>-/E)eOO3b@>\@0N\He.^/Q
+@\[2Q?8]A0H<bC(W]^.7b-Fg8g+Fg4V]E[?a,Z=7--_^GVeY3I\BUZ,_ND@3XYV#
+NBQRB>d8KO^b=RaPZG#@;BWTTga@]dd;8WK)#AV)?FL\IYgFeL/;&(S6;+<W8253
+3G<X6P14G4X\,&M1b8_T6RS>PVGAOaT5d<_R63eBBd28YV#9+XYJ<H7B#=)ZCJBA
+(fC4d(M(./3UdNL+SNR7IP;PW[K&SZ/9Z7?KaQ2440&1X0EEa.dG;7dE7.LL;)<=
+S9:A8JNFAI[&B)QO,beg^5_7=b/\F?&,Z(3M0&-(2eS28IHJ7SS9(</JN[50]+;3
+]@4[^DM^PV)DOg39DRBZLK9<@T6PT-PQK62/-[33FIM1A<T1FB2Y&JIdb;Xa922X
+AYG=6(bSNBIB9-LDc&&#-VEe:?2&E]cRTH@,F7&Kb_J>H&=]cK@4H.:JVJ#,/&O<
+QXd&OFOJCH14]/NK:+0OSD(f@-]AaS5:,f\L0SKd1WJ>+\O;-E)&-C7Q4KAQH.-S
+J8+7SaY@<?2RFKV<#KY++J3-V<@WE.>MVGe2C#Z\5T?E4OP]=XC.JGM<:A3NF5BP
+EbgF>:LI&d<_JZgNLH:c::EP7ffEFeN]e#NbV:b3TSK@:VaHNA_T5M5H.>]:WD5P
+<I6>],8QYB@T.,3gPRaU#TD]FeXX#H,X1<:DBN3ZeZ05B\V(4_E-Tg3Y6H]SX9g?
+E+)D5H0J#+SXN0,@C[<E,PWcU7M[NFJ6-L;1QM^(eB,XJ0=D4g_=,P_/?\7.MPYa
+MQ_S0GOa)=Z&@&8[-:(<U6f6F)>J@DH/RR^>9bZGcd;>A&8YI3QaaO&]R>5>(50Z
+W;&:Lb#3ZVYc+HfU&,97>+BD=Na]NBD5S4\X[86gLE<ScD-cD91YXUJ:b0^_-1&\
+OG9bV8?FDK=bTW3c&;X1W8:YHgD;588,S)d/CY3C(0&9741[cT)<f;M8UZI5?CNE
+02a(K<VYffFS@b5:[cBf<J[.:E]YHJ?V&d-^1.J9aS:N18g1E_V3WCX8K>MRDFTX
+cPZTPS5+cc.2M;HAB7?f/:><(M.C<8<;b,9(c2PXd7XZ9)>UB()5T.^_UA),J;eE
+gb)K,;&^^/MJQKBM=^GSWL4O(OZTCJLg@^>>S\&2ge)T._@,dNG8ORdB3ZVMC5R;
+F1Lbfc.=E7gCGfdW9J4S&BT+A[(6NbP)VE37g<?G6Nfd?@P)+J@E;b#U2Q5FA765
+;/@65ZOdYMKGd63VM<3FYF7A7,]a@=N[/J4B0@C.V>ff9b?H\AWcNgQ#@7?:d0Z=
+#0IGV.e=[[Z,KU3YP#-4T6Tg:YLT\N@QV7cE\KM7f>.b^H5QbF.?8=1B&F:E]O(I
+77#LUcaGTcKDUc+[1(4UDA,@=248#P>AUDYTeK)C+XfR;_>6-e6B<S[]I5f&SG/^
+0fGe2^P6cb;^>P<]:BK_X.Q#N#/\#=EY/4&>?DQ2RDGI8aA<G@M\81bce8&@]g[.
+dA\+T]f?F_4AVP:[^<9-Sg[8<Ec^?P#@IS(H:JW)@JDL<2_[=(bW;K2.>G(QSdSS
+74fYR2#1=VeRV4VN.Yg(g9Y>ZO(7X@U_b1g7HcN/O.f76eXbX0P_cS[?:&bN5.EK
+N/O<=,e#).bMM1(2:O=H^<7,XCcRO<HC6(TCA=-=@L;,cE.//;TYO<bb#Ra9=R7Y
++N<b?-@5,b9Y:7TbUc[C3O:#Q@--46P7:dLBY-893,TJ(06,OHKG@gV>KC_\A5>1
+3HYFKQ.-5/VPd598f=V_&FgWfBA[b][[ZV4T0VH01A3fQb5DbJ<^3,9&E=Y=b1Y4
+(0dK4]\e5MS55UB6U<X_Mb?J^4SDGR-KEOMV]g7G?Z=FZ:1RbeR3U/J=DPXXF^@\
+c+8UMR1F;(bbFF_[e_H>4@^>C;[QS=U3)/85;\)Q;=L]=.T.W]^375-HMZKIXLA\
+ORHJCa694:[]d74OfaP1\cCHTN27)ccWI48Q(@O_JX^)XROdXgC]IY,H]/Z\HO1M
+.Hbg<1Mc9Qgf.1Y_IO+Hc)5J=Z?H8Gd,_gdO_(+M[:1GVWd)@HZ.+[QRU#;QJbYE
+P]9)HNcQ2F?S7([EI+OXgSC<B?XSeN5D^W7ZPeKPVP_4#9+9/e0/C+aeAAZ(3\cN
+Rbg6^KfR.L#(JLI(OP7e&VWP?W-9HAgNf5Tg=KgO5WTT,Z)/gU5Jed27_A2g7>TW
+ECVgE9.KP()7,Eg.;@CS66T>S^_:64\_?cd\KfW;I#EN0Gf)V@XZ9MgUc;VL80ML
+g/>Cg<I/HcWe8RQO@O^4-02I?Z=B0_VdF^.Y<e[R@FI)))9DB;(QD[XJd4D0UC/5
+&+>&8T-&#gZ=F1N06@OLM4Fe6CR>eJ&:1+6MY^EOU51)bPEK>+cQ\P(F@.1b^(71
+^D\@JFIX,IJG6;/Zaf9ATJ/De/PU.ce=\I.0@9)g21[2=P&,HD@],2)@HX7#XAcg
+>;RW<Y?VL,>5S]d=9F^U&0IgD4Z/>Z1SafIKPKA_bU<GGZ9_O.LGO<^BOE.2NV\:
+IdZC>0RA40E#gP-a]TF[8CX_ON<XK15NCQ]@,+BJ4):C7YV:N6;T6F9<,a>561_R
+7PL)EL^-UaDN476FA;N8eAO(J1=GVg7bP,Se7U14]@<C<?GY,f0J>Pe1WHE[.-NO
+BLG8J6cJ7-IR;6f,2VW^L8I99B;2-MN12)YHRUeC_5JP+a[g0[8MQF3LdGE1Y03M
+HMBMcONA7]bSPAK_=3:<WC8,9Y-,:Y<>(-TI1:0Zb?G;\+>WddF_Y&).UKe)a2A]
+7Q]7_C_&4VGD+,&dNJ;XH@V:7\&B/ZB1C,:WdIHY86,22V2#>XGbCU2@K-T\_g;G
+e#LJeON.GcdDKH9Y#_,^D8=>eE)4Z3:-M]I,_#V2@F#75a#5536L1<g]E?RdCTQR
++<M.Gd[fg#V9;.K&:,7A5Q4/aWV,fZDMe[?>Y:NAG_\VO;-NL(\55,NR\V0S)6b^
+]P/QcZZ[V&;VVO;M;4FM?FJXAe0_FVeH,YP;6V1D&/N&3N6O@C.6fQVAEeDIF7QM
+3\#E-^7H__9M=gC3Ff>(U:BM54MQfUE/WU,,TNU2fG>M@W+.]D8L6]24O4);=WYH
+/-]dUcg3#c21ec7[][gA&=ZL8\bHSE9LaDRdXRb&?X;G7M=fcML24=Q6G=J.YKC,
+ceQ#/<(C;8QY,U^@]3^;4^(,.OXTSJedT#8OZ#Q[7cKQ0-aJ^AZ+IVD^ZU&7U,I3
+QJ[?\-\Q[@g/e.]3bQ^O,L1]J_;)b<fK\f0EXVR,#.54LJc72SUI+IfHgPGM,f(^
+1IHd7dcd,g+4PDdAT^NEK7aBO=YJ4:eSa<+[=EMCQ+98:BX-Y()Fe&:B&_\^)NM6
+[Xf37RA19R7c)G&]W;#<5(3/^Ga236\SQ,:58NR&J]Z8#9?D=[\G62b->01-^HI]
+UE&RI@LO/0QDQ#4QbO,[Z3]]E;C?9<P#bSHNEE3);D#1+T6M:M]^B9?RfaUE03RR
+)RK902gGGS_[VXHLP-Ffg0>P:?Y<DM/c?,d]6H?.65b]e;=a02gWHVD2aQfRL@B7
+VO@/[R7;D0dMH6S.O733GE:4U&+8#\?5R[@W[9.aCC,###)YBQK=9,4T0\XWaUDC
+1.9LL,)WVIBLA5a=Td\FD6e>U6.QA+Sg._aT,:UD-.7==13HL/Ig5;b>]3[\?11>
+HMC.T:+KXA41R7Ug\R]BG5H-f#:<eU-&R1]EYJCIFIR/\VQXE9UPZ_RR#1f09^D6
+g=P]cT=+D331,$
+`endprotected
+
+
+initial begin
+    $dumpfile("fpm.vcd");
+    $dumpvars(9,top);
+end
+
+fpm m(.clk(clk),.reset(reset),.A(A),.B(B),.pushin(pushin),
+    .pushout(pushout),.Z(Z) );
+
+
+endmodule : top
+
+`include "fpm.sv"

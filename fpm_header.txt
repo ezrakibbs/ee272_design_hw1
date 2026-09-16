@@ -1,0 +1,7 @@
+module fpm(input reg clk,input reg reset  ,input reg [11:0] A
+  ,input reg [11:0] B
+  ,input reg pushin
+  ,output reg pushout
+  ,output reg [11:0] Z
+);
+
