@@ -1,4 +1,4 @@
-// VERSION: 2.1
+// VERSION: 2.2
 
 /*
 Design a floating point multiplier.  This are inspired by IEEE 754-2019 (See the SJSU library to download the specification)
@@ -53,9 +53,14 @@ module fpm(input  reg clk,
   reg [13:0] s1_unnormal_mantissa; // 7bits * 7bits can be up to 14 bits
   reg s1_pushout;
   logic detect_zero_flag;
+  logic signed [6:0] temp_exp;
 
   always@(*) begin
+    temp_exp = a.exponent + b.exponent - 15;
     if(({a.signbit, a.exponent, a.mantissa} == 0) | ({b.signbit, b.exponent, b.mantissa} == 0)) begin
+      detect_zero_flag = 1;
+    end
+    else if(temp_exp < 0) begin
       detect_zero_flag = 1;
     end
     else begin

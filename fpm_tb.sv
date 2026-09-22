@@ -48,10 +48,13 @@ module fpm_tb;
     #20
     input_1 = 12'b0_10000_100000;
     input_2 = 12'b0_10000_100000;
+    #20
+    input_1 = 12'b1_01000_000111;
+    input_2 = 12'b0_00010_011001;
   end
 
   initial begin
-    #200
+    #250
     $finish();
   end
 
