@@ -45,6 +45,9 @@ module fpm_tb;
     #20
     input_1 = 12'b0_01111_000000;
     input_2 = 12'b0_01111_000000;
+    #20
+    input_1 = 12'b0_10000_100000;
+    input_2 = 12'b0_10000_100000;
   end
 
   initial begin
