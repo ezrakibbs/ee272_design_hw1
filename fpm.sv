@@ -21,6 +21,7 @@ You can find the test bench in ~morris/272/f25/hw1There is also a header file th
 //  - 1 sign
 //  - 5 exponent
 //  - 6 mantissa
+`timescale 1ns/10ps
 
 module fpm(input  reg clk,
            input  reg reset,
