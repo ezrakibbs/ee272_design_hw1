@@ -1,4 +1,4 @@
-// VERSION: 4.0
+// VERSION: 4.1
 
 /*
 Design a floating point multiplier.  This are inspired by IEEE 754-2019 (See the SJSU library to download the specification)
@@ -183,18 +183,12 @@ module fpm(input  reg clk,
       if(s1_unnormal_mantissa[13] == 1) begin
         position_first_one = 13;
       end
-      else if(s1_unnormal_mantissa[12] == 1) begin
-        position_first_one = 12;
-      end      
-
-      if(position_first_one >= 6) begin
-        normal_mantissa = s1_unnormal_mantissa[position_first_one - 1 -:6];
-        shifted_mantissa = 0;
-      end
       else begin
-        shifted_mantissa = s1_unnormal_mantissa << (6 - position_first_one);
-        normal_mantissa = shifted_mantissa[5:0];
-      end
+        position_first_one = 12;
+      end  
+
+      normal_mantissa = s1_unnormal_mantissa[position_first_one - 1 -:6];
+      shifted_mantissa = 0;
 
       if({s1_unnormal_exponent, normal_mantissa} > SATURATIOn) begin
         normal_exponent = SATURATIOn[10:6];
