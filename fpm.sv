@@ -1,4 +1,4 @@
-// VERSION: 3.0
+// VERSION: 4.0
 
 /*
 Design a floating point multiplier.  This are inspired by IEEE 754-2019 (See the SJSU library to download the specification)
@@ -47,13 +47,37 @@ module fpm(input  reg clk,
   assign a = A;
   assign b = B;
 
-  // stage 1 - multiply
-  reg s1_signbit;
-  reg [5:0] s1_unnormal_exponent;
-  reg [13:0] s1_unnormal_mantissa; // 7bits * 7bits can be up to 14 bits
-  reg s1_pushout;
+  // stage 0 - partial multiply part 1
+  reg s0_signbit;
+  reg [5:0] s0_unnormal_exponent;
+  reg [13:0] s0_partial_mantissa; // 7bits * 7bits can be up to 14 bits
+  reg s0_pushout;
+  reg [13:0] s0_reg_addend4;
+  reg [13:0] s0_reg_addend5;
+  reg [13:0] s0_reg_addend6;
+
   logic detect_zero_flag;
   logic signed [6:0] temp_exp;
+  wire [6:0] a_mantissa;
+  wire [6:0] b_mantissa;
+  assign a_mantissa = {1'b1, a.mantissa};
+  assign b_mantissa = {1'b1, b.mantissa};
+  wire [13:0] addends0;
+  wire [13:0] addends1;
+  wire [13:0] addends2;
+  wire [13:0] addends3;
+  wire [13:0] addends4;
+  wire [13:0] addends5;
+  wire [13:0] addends6;
+  logic [13:0] partial_product_part1;
+
+  assign addends0 = (b_mantissa[0] == 1'b1) ? {7'b0000000, a_mantissa} : 0;
+  assign addends1 = (b_mantissa[1] == 1'b1) ? {7'b0000000, a_mantissa} << 1 : 0;
+  assign addends2 = (b_mantissa[2] == 1'b1) ? {7'b0000000, a_mantissa} << 2 : 0;
+  assign addends3 = (b_mantissa[3] == 1'b1) ? {7'b0000000, a_mantissa} << 3 : 0;
+  assign addends4 = (b_mantissa[4] == 1'b1) ? {7'b0000000, a_mantissa} << 4 : 0;
+  assign addends5 = (b_mantissa[5] == 1'b1) ? {7'b0000000, a_mantissa} << 5 : 0;
+  assign addends6 = (b_mantissa[6] == 1'b1) ? {7'b0000000, a_mantissa} << 6 : 0;
 
   always@(*) begin
     temp_exp = a.exponent + b.exponent - 15;
@@ -68,8 +92,57 @@ module fpm(input  reg clk,
     end
   end
 
+  always@(*) begin
+    partial_product_part1 = addends0 + addends1 + addends2 + addends3;
+  end
+
   always@(posedge clk) begin
-    if(reset | !pushin)
+    if(reset | !pushin) begin
+      s0_signbit <= 0;
+      s0_unnormal_exponent <= 0;
+      s0_partial_mantissa <= 0;
+      s0_pushout <= 0;
+
+      s0_reg_addend4 <= 0;
+      s0_reg_addend5 <= 0;
+      s0_reg_addend6 <= 0;
+    end
+
+    else if(detect_zero_flag) begin
+      s0_signbit <= 0;
+      s0_unnormal_exponent <= 0;
+      s0_partial_mantissa <= 0;
+      s0_pushout <= 1;
+
+      s0_reg_addend4 <= 0;
+      s0_reg_addend5 <= 0;
+      s0_reg_addend6 <= 0;
+    end
+
+    else begin
+      s0_signbit <= a.signbit ^ b.signbit;
+      s0_unnormal_exponent <= a.exponent + b.exponent - 15;
+      s0_partial_mantissa <= partial_product_part1;
+      s0_pushout <= 1;
+
+      s0_reg_addend4 <= addends4;
+      s0_reg_addend5 <= addends5;
+      s0_reg_addend6 <= addends6;
+    end
+  end
+
+  // stage 1 - partial multiply part 2
+  reg s1_signbit;
+  reg [5:0] s1_unnormal_exponent;
+  reg [13:0] s1_unnormal_mantissa; // 7bits * 7bits can be up to 14 bits
+  reg s1_pushout;
+
+  logic [13:0] partial_product_part2;
+  always@(*) begin
+    partial_product_part2 = s0_partial_mantissa + s0_reg_addend4 + s0_reg_addend5 + s0_reg_addend6;
+  end
+  always@(posedge clk) begin
+    if(reset)
     begin
       s1_signbit <= 0;
       s1_unnormal_exponent <= 0;
@@ -77,19 +150,12 @@ module fpm(input  reg clk,
       s1_pushout <= 0;
     end
 
-    else if(detect_zero_flag) begin
-      s1_signbit <= 0;
-      s1_unnormal_exponent <= 0;
-      s1_unnormal_mantissa <= 0;
-      s1_pushout <= 1;
-    end
-
     else 
     begin
-      s1_signbit <= a.signbit ^ b.signbit;
-      s1_unnormal_exponent <= a.exponent + b.exponent - 15;
-      s1_unnormal_mantissa <= ({1'b1, a.mantissa}) * ({1'b1, b.mantissa});
-      s1_pushout <= 1;
+      s1_signbit <= s0_signbit;
+      s1_unnormal_exponent <= s0_unnormal_exponent;
+      s1_unnormal_mantissa <= partial_product_part2;
+      s1_pushout <= s0_pushout;
     end
   end
 
