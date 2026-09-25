@@ -1,0 +1,142 @@
+#!/usr/bin/python3
+
+import subprocess as sp
+import argparse
+import os
+import time
+import random
+
+res=0
+uid=""
+
+
+def check_if_has(lines,itms):
+    """check_if_has checks to see if any item in itms is in the lines"""
+    for x in itms:
+        for l in lines:
+            if x in l:
+                print(l)
+                return True
+    return False
+
+trailers="\n\r\t "
+
+def runecho(args,timeout=10.0):
+    p1=sp.Popen(args,stderr=sp.STDOUT,stdout=sp.PIPE,encoding="utf-8")
+    tstart=time.time()
+    rv=[]
+    cline=""
+    while True:
+        oc=p1.stdout.read(1)
+        if not oc:
+            time.sleep(0.10)
+            if p1.poll()!=None:
+                if len(cline)>0:
+                   rv.append(cline)
+                return rv
+            if (time.time()-tstart)>timeout :
+                p1.kill()
+                if len(cline)>0:
+                   rv.append(cline)
+                print("Timeout")
+                rv.append("Timeout")
+                return rv
+        else:
+           print(oc,end="")
+           if oc=="\n":
+               rv.append(cline)
+               cline=""
+           else:
+               cline+=oc
+    if len(cline)>0:
+       rv.append(cline)
+    return rv
+
+
+def runsynthesis(clkperiod,filename,clkname,resetname):
+    global uid
+    simres="No returned result\n"
+    ofn=filename.split(".")
+    try:
+        os.remove("synthesis.script")
+    except:
+        pass
+    with open("synthesis.script","w") as fs:
+        fs.write("""set link_library {{/home/morris/FreePDK45/osu_soc/lib/files/gscl45nm.db /apps/synopsys/PrimeTimeNew/pts/Q-2019.12/libraries/syn/dw_foundation.sldb}}
+set target_library {{/home/morris/FreePDK45/osu_soc/lib/files/gscl45nm.db}}
+suppress_message {{ UID-401 VER-130 }}
+read_sverilog {2}
+current_design {5}
+create_clock {3} -name {3} -period {1:5.3f}
+set_propagated_clock {3}
+set_clock_uncertainty 0.25 {3}
+set_propagated_clock {3}
+set_output_delay 0.5 -clock {3} [all_outputs]
+set all_inputs_wo_rst_Clock [remove_from_collection [remove_from_collection [all_inputs] [get_port {3}]] [get_port {4}]]
+set_driving_cell -lib_cell NAND2X1 $all_inputs_wo_rst_Clock
+set_input_delay 0.6 -clock {3} $all_inputs_wo_rst_Clock
+set_output_delay 0.6 -clock {3} [all_outputs]
+set_fix_hold [ get_clocks {3} ]
+set_output_delay 0.3 -clock {3} [all_outputs]
+set_max_delay {1:5.3f} -from [all_inputs] -to [all_outputs]
+compile_ultra
+create_clock {3} -name {3} -period {0:5.3f}
+
+update_timing
+report_timing -max_paths 5
+write -hierarchy -format verilog -output {5}_gates.v
+quit
+
+""".format(clkperiod,clkperiod*0.7,filename,clkname,resetname,ofn[0]))
+    try:
+        os.remove("filt_gates.v".format(idnum))
+    except:
+        pass
+    cwd=runecho(['pwd'])[0]
+    try:
+        with open("sss","w") as fs:
+            fs.write(f"""#!/usr/bin/csh
+cd {cwd}
+source /apps/design_environment.csh
+dc_shell -f synthesis.script | tee synres.txt
+""")
+        os.chmod("sss",0o705)
+        arg=["./sss"]
+        simres=runecho(arg,timeout=800)
+    except:
+        print("Synthesis didn't work")
+        print(simres)
+        res.write("synthesis didn't run\n")
+        return False
+    lines=simres
+    print("num returned lines",len(lines))
+    if check_if_has(lines,["Latch","latch","Error","error"," arc","loop","Loop",
+                           "violated","Violated","VIOLATED","ERROR","LATCH"]):
+        print("Synthesis has errors")
+        res.write("Synthesis failed\n")
+        return False
+    res.write("Synthesis worked ish\n")
+    return True
+
+def main():
+    global res,uid
+    clkperiod=2.5
+    resfn="results.txt"
+    parser=argparse.ArgumentParser(description='272 module synthesis')
+    parser.add_argument("filename")
+    parser.add_argument("--clkperiod",default=1.4)
+    parser.add_argument("--resultsFileName",default="results.txt")
+    parser.add_argument("--clkname",default="clk")
+    parser.add_argument("--resetname",default="reset");
+    args = parser.parse_args()
+    print(args)
+    resfn=args.resultsFileName
+    clkperiod=float(args.clkperiod)
+    clkname=args.clkname
+    filename=args.filename
+    with open(resfn,"w") as res:
+        res.write("Run at {}\n".format(time.asctime(time.localtime(time.time()))))
+        runsynthesis(clkperiod,filename,args.clkname,args.resetname)
+
+main()
+
